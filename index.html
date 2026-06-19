@@ -323,11 +323,38 @@
    il link (dopo che ricarichi il file su GitHub).
    ======================================================================= */
 const FESTA = {
-  nome:  "Festa di fine anno",   // titolino in alto (italiano)
-  nomeEn:    "End-of-year party",    // stesso titolo in inglese
-  nome:  "Acqua e Bibite Incluse",   // titolino in alto (italiano)  
+  // riga piccola in alto (sopra il titolo)
+  nome:      "Festa di fine anno",   // (italiano)
+  nomeEn:    "End-of-year party",    // (inglese)
+
+  // TITOLO GRANDE  — cambialo se un domani non è più pizza (es. "Ordine Pastasciutta")
+  titolo:    "Ordine Pizze 🍕",       // (italiano)
+  titoloEn:  "Pizza Order 🍕",        // (inglese)
+
+  // RIGA DI TESTO sotto il titolo  — scrivi quello che vuoi (lascia "" per nasconderla)
+  sottotitolo:   "Acuqa e Bibite INCLUSE!!!.",  // (italiano)
+  sottotitoloEn: "Water and drinks included (no beer)",   // (inglese)
+
   dataFesta: "Venerdì 03/07/2026",                     // es. "Venerdì 20 dicembre" — quando è la festa
-  scadenza:  "Ordinare e lasciare soldi nella cassettina entro il 29/06/2026"                      // es. "Entro il 15 dicembre" — ordini entro
+  scadenza:  "29/06/2026 inviare l'ordine e lasciare i soldi nella cassetta in classe"                      // es. "Entro il 15 dicembre" — ordini entro
+};
+
+/* =======================================================================
+   🏷️  TITOLI DELLE SEZIONI  —  MODIFICA QUI
+   Cambia il testo tra le virgolette (gli "...En" sono per l'inglese).
+   ======================================================================= */
+const TESTI = {
+  sezMenu:        "Scegli le pizze",   // titolo sezione 1
+  sezOrdine:      "Il tuo ordine",     // titolo sezione 2
+  sezDati:        "I tuoi dati",       // titolo sezione 3
+  gruppoNormali:  "Pizze normali",     // sottogruppo pizze normali
+  gruppoBaby:     "Pizze baby",        // sottogruppo pizze baby
+  // --- English ---
+  sezMenuEn:       "Choose your pizzas",
+  sezOrdineEn:     "Your order",
+  sezDatiEn:       "Your details",
+  gruppoNormaliEn: "Regular pizzas",
+  gruppoBabyEn:    "Baby pizzas"
 };
 
 /* =======================================================================
@@ -338,7 +365,7 @@ const FESTA = {
 const MENU = {
   valuta: "€",
 
-  // --- PIZZE NORMALI BIBITE E ACQUA INCLUSE ---  "Nome": prezzo
+  // --- PIZZE NORMALI ---  "Nome": prezzo
   normali: {
     "Margherita": 8,
     "Prosciutto cotto": 8,
@@ -346,11 +373,11 @@ const MENU = {
     "Verdure": 8
   },
 
-  // --- PIZZE BABY BIBITE E ACQUA INCLUSE ---
+  // --- PIZZE BABY ---
   baby: {
     "Prosciutto": 5,
     "Würstel": 5,
-    "Margherita": 5,
+    "Margherita": 5
   },
 
   // --- BIBITE ---
@@ -359,7 +386,7 @@ const MENU = {
     "Coca Cola": 0,
     "Fanta": 0,
     "Aranciata": 0,
-    "Birra": 2
+    "Birra": 2.0
   },
 
   // --- OPZIONE MOZZARELLA --- (true = mostrata, false = nascosta)
@@ -402,7 +429,7 @@ const I18N = {
     sentTitle:"Ordine inviato!", sentBody:"Grazie, il tuo ordine è stato registrato. 🍕", sentAgain:"Fai un altro ordine", saveOrderBtn:"Salva ordine",
     orgTitle:"Per chi organizza · dati & impostazioni",
     setFesta:"Data festa", setDead:"Scadenza ordini",
-    setHint:"Per cambiare <b>titolo, data festa e scadenza</b>: apri il file <code>index.html</code>, modifica il blocco <code>FESTA</code> in cima e ricaricalo su GitHub.",
+    setHint:"Per cambiare <b>titolo, testo, data festa e scadenza</b>: apri il file <code>index.html</code>, modifica il blocco <code>FESTA</code> in cima e ricaricalo su GitHub.",
     exportHint:"Gli ordini compilati su questo dispositivo vengono registrati qui sotto.",
     ordersSaved:"Ordini salvati", exportBtn:"Esporta CSV", clearBtn:"Svuota",
     footer:"Buona festa! 🎉",
@@ -437,7 +464,7 @@ const I18N = {
     sentTitle:"Order sent!", sentBody:"Thanks, your order has been recorded. 🍕", sentAgain:"Place another order", saveOrderBtn:"Save order",
     orgTitle:"For the organizer · data & settings",
     setFesta:"Party date", setDead:"Order deadline",
-    setHint:"To change the <b>title, party date and deadline</b>: open the <code>index.html</code> file, edit the <code>FESTA</code> block at the top, and re-upload it to GitHub.",
+    setHint:"To change the <b>title, text, party date and deadline</b>: open the <code>index.html</code> file, edit the <code>FESTA</code> block at the top, and re-upload it to GitHub.",
     exportHint:"Orders filled in on this device are logged below.",
     ordersSaved:"Saved orders", exportBtn:"Export CSV", clearBtn:"Clear",
     footer:"Have a great party! 🎉",
@@ -471,6 +498,7 @@ const LS_DEAD = "pizza_dead";
 
 function t(k){ return I18N[lang][k]; }
 function gtxt(g){ return g; }           // nome gusto (come scritto nel MENU)
+function tx(itKey){ return lang==="it" ? TESTI[itKey] : (TESTI[itKey+"En"]||TESTI[itKey]); }
 function dtxt(d){ return d; }           // nome bibita (come scritto nel MENU)
 const DRINKS = Object.keys(MENU.bibite);
 function catPrices(cat){ return cat==="baby" ? MENU.baby : MENU.normali; }
@@ -500,7 +528,7 @@ function renderMenu(){
     var cat = pair[0], pizze = pair[1] || {};
     const group = document.createElement("div");
     group.className = "menu-group";
-    const title = cat==="normale" ? t("normaleTitle") : t("babyTitle");
+    const title = cat==="normale" ? tx("gruppoNormali") : tx("gruppoBaby");
     const tag = cat==="baby" ? `<span class="tag">${t("babyTag")}</span>` : "";
     group.innerHTML = `<h3>${title} ${tag}</h3>`;
     const grid = document.createElement("div");
@@ -536,7 +564,7 @@ function renderCart(){
   }
   el.innerHTML = "";
   cart.forEach(c=>{
-    const catLbl = c.cat==="baby" ? t("babyTitle") : t("normaleTitle");
+    const catLbl = c.cat==="baby" ? tx("gruppoBaby") : tx("gruppoNormali");
     const div = document.createElement("div");
     div.className = "citem";
     const mozzBtns = mozzOptions().map(function(opt){
@@ -635,9 +663,24 @@ function setLang(l){
 
 /* ---------- festa info (titolo, data, scadenza) ---------- */
 function applyFesta(){
-  // titolino in alto
+  // riga piccola in alto
   const kick = document.querySelector('.kicker');
   if(kick) kick.textContent = (lang==="it" ? FESTA.nome : (FESTA.nomeEn||FESTA.nome)) || "";
+  // titolo grande
+  const h1 = document.querySelector('header h1');
+  if(h1) h1.textContent = (lang==="it" ? FESTA.titolo : (FESTA.titoloEn||FESTA.titolo)) || "";
+  // riga di testo sotto il titolo
+  const sub = document.querySelector('header .sub');
+  if(sub){
+    const txt = (lang==="it" ? FESTA.sottotitolo : (FESTA.sottotitoloEn||FESTA.sottotitolo)) || "";
+    sub.textContent = txt;
+    sub.style.display = txt ? "" : "none";
+  }
+  // titoli delle sezioni
+  const setSpan = (sel, val)=>{ const e=document.querySelector(sel); if(e) e.textContent = val; };
+  setSpan('[data-i18n="menuTitle"]', tx("sezMenu"));
+  setSpan('[data-i18n="cartTitle"]', tx("sezOrdine"));
+  setSpan('[data-i18n="detailsTitle"]', tx("sezDati"));
   // data festa
   const fv = document.getElementById("festa-val");
   const pf = document.getElementById("pill-festa");
@@ -721,10 +764,11 @@ function buildReceipt(o){
   if(altro && altro.trim()) righe += `<tr><td>${altro.trim()}</td><td class="r">—</td></tr>`;
 
   const nomeFesta = lang==="it" ? FESTA.nome : (FESTA.nomeEn||FESTA.nome);
+  const titoloRic = lang==="it" ? FESTA.titolo : (FESTA.titoloEn||FESTA.titolo);
   el.innerHTML = `
     <div class="rc-head">
       ${nomeFesta ? `<div class="rc-festa">${nomeFesta}</div>` : ""}
-      <h2>Ordine Pizze 🍕</h2>
+      <h2>${titoloRic||""}</h2>
       ${FESTA.dataFesta ? `<div class="rc-meta">📅 ${FESTA.dataFesta}</div>` : ""}
     </div>
     <div class="rc-who"><strong>${o.nome}</strong>${o.tel?` · ${o.tel}`:""}<div class="rc-ts">${o.ts}</div></div>
