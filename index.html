@@ -142,6 +142,29 @@
   .sent-ok .sent-ico{width:60px;height:60px;margin:0 auto 12px;border-radius:50%;background:rgba(63,163,77,.14);color:var(--basil);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;}
   .sent-ok h3{font-family:'Fredoka',sans-serif;font-size:22px;color:var(--ink);margin:0 0 6px;}
   .sent-ok p{color:var(--ink-soft);font-weight:600;font-size:14.5px;margin:0 0 16px;}
+  .sent-actions{display:flex;flex-direction:column;gap:9px;}
+
+  /* foglio "Salva ordine" — nascosto a schermo, visibile in stampa */
+  #receipt{display:none;}
+  @media print{
+    @page{margin:14mm;}
+    body{background:#fff;}
+    body > *{display:none !important;}
+    #receipt{display:block !important;color:#1a1a1a;font-family:'Nunito',sans-serif;max-width:480px;margin:0 auto;}
+    #receipt .rc-head{text-align:center;border-bottom:2px solid #1a1a1a;padding-bottom:12px;margin-bottom:16px;}
+    #receipt .rc-festa{font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:#3FA34D;}
+    #receipt h2{font-family:'Fredoka',sans-serif;font-size:26px;margin:4px 0;}
+    #receipt .rc-meta{font-size:13px;font-weight:700;}
+    #receipt .rc-who{font-size:15px;margin-bottom:14px;}
+    #receipt .rc-who .rc-ts{font-size:12px;color:#666;font-weight:600;margin-top:2px;}
+    #receipt .rc-tab{width:100%;border-collapse:collapse;font-size:14px;}
+    #receipt .rc-tab td{padding:7px 0;border-bottom:1px dashed #bbb;vertical-align:top;}
+    #receipt .rc-tab td small{display:block;font-size:11px;color:#777;text-transform:uppercase;letter-spacing:.04em;}
+    #receipt .rc-tab td.r{text-align:right;white-space:nowrap;font-weight:700;}
+    #receipt .rc-tot{display:flex;justify-content:space-between;font-family:'Fredoka',sans-serif;font-size:19px;margin-top:14px;padding-top:10px;border-top:2px solid #1a1a1a;}
+    #receipt .rc-note{margin-top:12px;font-size:13px;background:#f4f0e8;border-radius:8px;padding:8px 10px;}
+    #receipt .rc-foot{text-align:center;margin-top:22px;font-family:'Fredoka',sans-serif;font-size:16px;color:#3FA34D;}
+  }
 
   .summary{background:var(--cream);border:1px dashed var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-weight:700;font-size:14px;}
   .summary .line{display:flex;justify-content:space-between;gap:10px;padding:2px 0;}
@@ -259,7 +282,10 @@
         <div class="sent-ico">✓</div>
         <h3 data-i18n="sentTitle">Ordine inviato!</h3>
         <p data-i18n="sentBody">Grazie, il tuo ordine è stato registrato. 🍕</p>
-        <button class="btn ghost" onclick="resetForNewOrder()" data-i18n="sentAgain">Fai un altro ordine</button>
+        <div class="sent-actions">
+          <button class="btn primary" onclick="salvaOrdine()">📄 <span data-i18n="saveOrderBtn">Salva ordine</span></button>
+          <button class="btn ghost" onclick="resetForNewOrder()" data-i18n="sentAgain">Fai un altro ordine</button>
+        </div>
       </div>
     </section>
 
@@ -287,6 +313,9 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- foglio "Salva ordine" — visibile solo in stampa/PDF -->
+  <div id="receipt"></div>
+
 <script>
 /* =======================================================================
    ✏️  IMPOSTAZIONI DELLA FESTA  —  MODIFICA QUI
@@ -296,8 +325,8 @@
 const FESTA = {
   nome:      "Festa di fine anno",   // titolino in alto (italiano)
   nomeEn:    "End-of-year party",    // stesso titolo in inglese
-  dataFesta: "Venerdì 03/07/2026",                     // es. "Venerdì 20 dicembre" — quando è la festa
-  scadenza:  "30/06/2026 ordinare e lasciare i soldi nella cassetta in classe"                      // es. "Entro il 15 dicembre" — ordini entro
+  dataFesta: "",                     // es. "Venerdì 20 dicembre" — quando è la festa
+  scadenza:  ""                      // es. "Entro il 15 dicembre" — ordini entro
 };
 
 /* =======================================================================
@@ -310,26 +339,26 @@ const MENU = {
 
   // --- PIZZE NORMALI ---  "Nome": prezzo
   normali: {
-    "Margherita": 5,
-    "Prosciutto cotto": 6,
-    "Salame piccante": 6,
-    "Verdure": 6.5
+    "Margherita": 6,
+    "Prosciutto cotto": 7,
+    "Salame piccante": 7,
+    "Verdure": 7
   },
 
   // --- PIZZE BABY ---
   baby: {
     "Prosciutto": 4,
     "Würstel": 4,
-    "Margherita": 4,
+    "Margherita": 3.5
   },
 
   // --- BIBITE ---
   bibite: {
-    "Acqua": 0,
-    "Coca Cola": 0,
-    "Fanta": 0,
-    "Aranciata": 0,
-    "Birra": 2
+    "Acqua": 1,
+    "Coca Cola": 2.5,
+    "Fanta": 2.5,
+    "Aranciata": 2.5,
+    "Birra": 3
   },
 
   // --- OPZIONE MOZZARELLA --- (true = mostrata, false = nascosta)
@@ -369,7 +398,7 @@ const I18N = {
     drinkLabel:"Bibite", drinkPh:"Es. Coca Cola", drinkHint:"Imposta quante ne vuoi per ogni tipo.", drinkOtherPh:"Altra bibita (facoltativo)",
     notesLabel:"Note", notesPh:"Es. senza cipolla, allergie...",
     sendBtn:"Invia ordine", sendNote:"L'ordine arriva direttamente all'organizzatore.",
-    sentTitle:"Ordine inviato!", sentBody:"Grazie, il tuo ordine è stato registrato. 🍕", sentAgain:"Fai un altro ordine",
+    sentTitle:"Ordine inviato!", sentBody:"Grazie, il tuo ordine è stato registrato. 🍕", sentAgain:"Fai un altro ordine", saveOrderBtn:"Salva ordine",
     orgTitle:"Per chi organizza · dati & impostazioni",
     setFesta:"Data festa", setDead:"Scadenza ordini",
     setHint:"Per cambiare <b>titolo, data festa e scadenza</b>: apri il file <code>index.html</code>, modifica il blocco <code>FESTA</code> in cima e ricaricalo su GitHub.",
@@ -404,7 +433,7 @@ const I18N = {
     drinkLabel:"Drinks", drinkPh:"e.g. Coca Cola", drinkHint:"Set how many you want of each.", drinkOtherPh:"Other drink (optional)",
     notesLabel:"Notes", notesPh:"e.g. no onion, allergies...",
     sendBtn:"Send order", sendNote:"Your order goes straight to the organizer.",
-    sentTitle:"Order sent!", sentBody:"Thanks, your order has been recorded. 🍕", sentAgain:"Place another order",
+    sentTitle:"Order sent!", sentBody:"Thanks, your order has been recorded. 🍕", sentAgain:"Place another order", saveOrderBtn:"Save order",
     orgTitle:"For the organizer · data & settings",
     setFesta:"Party date", setDead:"Order deadline",
     setHint:"To change the <b>title, party date and deadline</b>: open the <code>index.html</code> file, edit the <code>FESTA</code> block at the top, and re-upload it to GitHub.",
@@ -662,6 +691,9 @@ function sendOrder(){
   // send to organizer's Google Sheet
   sendToGoogle(o);
 
+  // prepara il foglio "Salva ordine" (col carrello ancora pieno)
+  buildReceipt(o);
+
   // show confirmation
   flashToast(t("sentToast"));
   document.getElementById("send-area").style.display = "none";
@@ -669,6 +701,38 @@ function sendOrder(){
   ok.style.display = "";
   ok.scrollIntoView({block:"center"});
 }
+
+/* ---------- salva ordine (stampa / PDF) ---------- */
+function buildReceipt(o){
+  const el = document.getElementById("receipt");
+  if(!el) return;
+  let righe = "";
+  cart.forEach(function(c){
+    let opt = String(c.mozz||"");
+    if(gfAttivo() && c.dough==="gf") opt += ", senza glutine";
+    const cat = c.cat==="baby" ? "baby " : "";
+    righe += `<tr><td>${c.qty}× ${cat}${gtxt(c.gusto)}<small>${opt}</small></td><td class="r">${fmtPrice(pizzaPrice(c.cat,c.gusto,c.dough)*c.qty)}</td></tr>`;
+  });
+  DRINKS.forEach(function(d){
+    if((drinkQty[d]||0)>0) righe += `<tr><td>${drinkQty[d]}× ${dtxt(d)}</td><td class="r">${fmtPrice(drinkPrice(d)*drinkQty[d])}</td></tr>`;
+  });
+  const altro = (document.getElementById("f-bibita-altro")||{}).value;
+  if(altro && altro.trim()) righe += `<tr><td>${altro.trim()}</td><td class="r">—</td></tr>`;
+
+  const nomeFesta = lang==="it" ? FESTA.nome : (FESTA.nomeEn||FESTA.nome);
+  el.innerHTML = `
+    <div class="rc-head">
+      ${nomeFesta ? `<div class="rc-festa">${nomeFesta}</div>` : ""}
+      <h2>Ordine Pizze 🍕</h2>
+      ${FESTA.dataFesta ? `<div class="rc-meta">📅 ${FESTA.dataFesta}</div>` : ""}
+    </div>
+    <div class="rc-who"><strong>${o.nome}</strong>${o.tel?` · ${o.tel}`:""}<div class="rc-ts">${o.ts}</div></div>
+    <table class="rc-tab">${righe}</table>
+    <div class="rc-tot"><span>${t("sumTotal")}</span><span>${fmtPrice(o.totale)}</span></div>
+    ${o.note ? `<div class="rc-note">📝 ${o.note}</div>` : ""}
+    <div class="rc-foot">Grazie! 🎉</div>`;
+}
+function salvaOrdine(){ window.print(); }
 
 function resetForNewOrder(){
   cart = [];
@@ -767,4 +831,3 @@ window.addEventListener("hashchange", checkAdmin);
 </script>
 </body>
 </html>
-
