@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ordine Pizze · Festa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --cream:#FFF7EC;
+    --card:#FFFFFF;
+    --ink:#3B2A1E;
+    --ink-soft:#7A6657;
+    --line:#EFE2CF;
+    --tomato:#E14430;
+    --tomato-dark:#C2351F;
+    --basil:#3FA34D;
+    --basil-dark:#2F8A3D;
+    --sun:#F6B93B;
+    --wa:#25D366;
+    --wa-dark:#1EBE5A;
+    --shadow:0 8px 24px rgba(59,42,30,.10);
+    --shadow-sm:0 2px 8px rgba(59,42,30,.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Nunito',system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 12% 8%, rgba(246,185,59,.10), transparent 40%),
+      radial-gradient(circle at 88% 4%, rgba(63,163,77,.10), transparent 38%),
+      radial-gradient(circle at 50% 100%, rgba(225,68,48,.07), transparent 45%),
+      var(--cream);
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:0 16px 64px;}
+
+  /* Bunting */
+  .bunting{display:flex;justify-content:center;gap:0;height:26px;overflow:hidden;margin-bottom:4px;}
+  .bunting i{width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-top:22px solid var(--tomato);filter:drop-shadow(0 2px 2px rgba(0,0,0,.08));}
+  .bunting i:nth-child(4n+2){border-top-color:var(--basil);}
+  .bunting i:nth-child(4n+3){border-top-color:var(--sun);}
+  .bunting i:nth-child(4n+4){border-top-color:#5AA9E6;}
+
+  /* Header */
+  header{text-align:center;padding-top:6px;position:relative;}
+  .langbar{position:absolute;top:8px;right:0;display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px;box-shadow:var(--shadow-sm);}
+  .langbar button{border:none;background:none;font-family:'Fredoka',sans-serif;font-weight:600;font-size:13px;color:var(--ink-soft);padding:4px 10px;border-radius:999px;cursor:pointer;line-height:1;}
+  .langbar button.on{background:var(--ink);color:#fff;}
+  h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:34px;line-height:1.05;margin:14px 0 2px;color:var(--tomato);letter-spacing:-.5px;}
+  .kicker{font-family:'Caveat',cursive;font-size:26px;color:var(--basil-dark);line-height:1;margin-bottom:2px;}
+  .sub{color:var(--ink-soft);font-size:15px;margin:0 auto;max-width:340px;font-weight:600;}
+
+  /* Info banner */
+  .info{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap;}
+  .info .pill{flex:1 1 0;min-width:140px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:10px;}
+  .info .pill .ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex-shrink:0;}
+  .info .pill.date .ico{background:rgba(63,163,77,.15);}
+  .info .pill.dead .ico{background:rgba(225,68,48,.13);}
+  .info .pill .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:800;}
+  .info .pill .val{font-family:'Fredoka',sans-serif;font-weight:600;font-size:15px;color:var(--ink);}
+  .info .pill .val:empty::before{content:'—';color:var(--ink-soft);}
+
+  /* Card */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:var(--shadow);margin-bottom:18px;}
+  .card > h2{font-family:'Fredoka',sans-serif;font-weight:600;font-size:20px;margin:0 0 2px;display:flex;align-items:center;gap:8px;}
+  .card > .hint{color:var(--ink-soft);font-size:13.5px;margin:0 0 14px;font-weight:600;}
+  .badge-num{background:var(--tomato);color:#fff;width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;font-size:13px;font-weight:700;font-family:'Fredoka',sans-serif;}
+
+  .menu-group{margin-bottom:14px;}
+  .menu-group:last-child{margin-bottom:0;}
+  .menu-group h3{font-family:'Fredoka',sans-serif;font-size:14px;font-weight:600;color:var(--basil-dark);text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px;display:flex;align-items:center;gap:6px;}
+  .menu-group h3 .tag{background:rgba(63,163,77,.13);color:var(--basil-dark);font-size:10px;padding:2px 7px;border-radius:999px;font-family:'Nunito';font-weight:800;letter-spacing:.04em;}
+  .gusti{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .gusto{display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--cream);border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;transition:transform .08s ease,border-color .15s,background .15s;font-weight:700;font-size:14.5px;color:var(--ink);text-align:left;}
+  .gusto:active{transform:scale(.97);}
+  .gusto:hover{border-color:var(--tomato);background:#fff;}
+  .gusto .plus{width:22px;height:22px;border-radius:50%;background:var(--tomato);color:#fff;display:grid;place-items:center;font-size:16px;font-weight:700;flex-shrink:0;line-height:1;}
+
+  /* Cart */
+  .cart-empty{text-align:center;padding:22px 10px;color:var(--ink-soft);font-weight:600;}
+  .cart-empty .em{font-size:34px;display:block;margin-bottom:6px;opacity:.7;}
+  .citem{border:1.5px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;background:#fff;}
+  .citem:last-child{margin-bottom:0;}
+  .citem .top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;}
+  .citem .name{font-family:'Fredoka',sans-serif;font-weight:600;font-size:16px;line-height:1.15;}
+  .citem .name small{display:block;font-family:'Nunito';font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--basil-dark);margin-top:1px;}
+  .citem .rm{border:none;background:rgba(225,68,48,.10);color:var(--tomato);width:28px;height:28px;border-radius:9px;cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;display:grid;place-items:center;}
+  .citem .rm:hover{background:var(--tomato);color:#fff;}
+  .opt-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .seg{display:inline-flex;background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:2px;}
+  .seg button{border:none;background:none;font-family:'Nunito';font-weight:700;font-size:12.5px;color:var(--ink-soft);padding:5px 9px;border-radius:8px;cursor:pointer;line-height:1;white-space:nowrap;}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm);}
+  .seg.gf button.on{color:var(--basil-dark);}
+  .qty{display:inline-flex;align-items:center;gap:0;margin-left:auto;background:var(--cream);border:1px solid var(--line);border-radius:10px;}
+  .qty button{border:none;background:none;width:30px;height:30px;font-size:18px;font-weight:700;color:var(--tomato);cursor:pointer;line-height:1;display:grid;place-items:center;}
+  .qty span{min-width:24px;text-align:center;font-family:'Fredoka',sans-serif;font-weight:600;font-size:15px;}
+
+  /* Fields */
+  .field{margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{display:block;font-weight:800;font-size:13px;margin-bottom:5px;color:var(--ink);}
+  .field label .req{color:var(--tomato);}
+  .field input,.field select,.field textarea{width:100%;border:1.5px solid var(--line);border-radius:13px;padding:12px 14px;font-family:'Nunito';font-weight:600;font-size:15.5px;color:var(--ink);background:var(--cream);outline:none;transition:border-color .15s,background .15s;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--basil);background:#fff;}
+  .field textarea{resize:vertical;min-height:64px;}
+  .field input.err{border-color:var(--tomato);background:#fff5f3;}
+  .two{display:flex;gap:10px;}
+  .two .field{flex:1;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;}
+  .chip{border:1.5px solid var(--line);background:var(--cream);border-radius:999px;padding:6px 13px;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink-soft);}
+  .chip.on{background:var(--basil);border-color:var(--basil);color:#fff;}
+
+  /* Drink rows */
+  .drow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--cream);border:1.5px solid var(--line);border-radius:14px;padding:8px 8px 8px 14px;margin-bottom:8px;transition:border-color .15s,background .15s;}
+  .drow:last-child{margin-bottom:0;}
+  .drow.active{border-color:var(--basil);background:#fff;}
+  .drow .dname{font-weight:700;font-size:14.5px;color:var(--ink);}
+
+  /* Send */
+  .send{width:100%;border:none;background:var(--wa);color:#fff;font-family:'Fredoka',sans-serif;font-weight:600;font-size:18px;padding:16px;border-radius:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 20px rgba(37,211,102,.30);transition:transform .08s,background .15s;}
+  .send:hover{background:var(--wa-dark);}
+  .send:active{transform:scale(.98);}
+  .send svg{width:24px;height:24px;}
+  .send-note{text-align:center;color:var(--ink-soft);font-size:12.5px;font-weight:600;margin-top:10px;}
+
+  .summary{background:var(--cream);border:1px dashed var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-weight:700;font-size:14px;}
+  .summary .line{display:flex;justify-content:space-between;gap:10px;padding:2px 0;}
+  .summary .tot{border-top:1px solid var(--line);margin-top:6px;padding-top:8px;color:var(--tomato);font-family:'Fredoka',sans-serif;font-size:16px;}
+
+  /* Organizer / export */
+  .org{margin-top:6px;}
+  .org summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;font-family:'Fredoka',sans-serif;font-weight:500;color:var(--ink-soft);font-size:15px;padding:6px 2px;}
+  .org summary::-webkit-details-marker{display:none;}
+  .org summary .chev{transition:transform .2s;}
+  .org[open] summary .chev{transform:rotate(90deg);}
+  .org-body{padding-top:10px;}
+  .org-actions{display:flex;gap:10px;}
+  .btn{flex:1;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-family:'Fredoka',sans-serif;font-weight:500;font-size:14.5px;padding:12px;border-radius:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .btn:active{transform:scale(.98);}
+  .btn.ghost{color:var(--tomato);}
+  .count{font-weight:800;}
+
+  /* Settings inputs */
+  .gstat{display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px;border-radius:13px;padding:11px 14px;margin-bottom:14px;line-height:1.3;}
+  .gstat .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .gstat.on{background:rgba(63,163,77,.12);color:var(--basil-dark);}
+  .gstat.on .dot{background:var(--basil);box-shadow:0 0 0 3px rgba(63,163,77,.18);}
+  .gstat.off{background:rgba(122,102,87,.10);color:var(--ink-soft);}
+  .gstat.off .dot{background:var(--ink-soft);}
+  .settings .field label{font-size:12px;}
+  .editlink{background:none;border:none;color:var(--basil-dark);font-weight:800;font-size:12px;cursor:pointer;font-family:'Nunito';text-decoration:underline;padding:0;}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:12px;font-weight:600;margin-top:8px;opacity:.8;}
+
+  /* Toast */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;font-weight:700;font-size:14px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:50;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="bunting" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+    <header>
+      <div class="langbar">
+        <button id="lang-it" class="on" onclick="setLang('it')">IT</button>
+        <button id="lang-en" onclick="setLang('en')">EN</button>
+      </div>
+      <div class="kicker" data-i18n="kicker">Festa di fine anno</div>
+      <h1 data-i18n="title">Ordine Pizze 🍕</h1>
+      <p class="sub" data-i18n="sub">Scegli le tue pizze e invia l'ordine sul gruppo WhatsApp.</p>
+    </header>
+
+    <div class="info">
+      <div class="pill date">
+        <div class="ico">📅</div>
+        <div>
+          <div class="lbl" data-i18n="festaLabel">Festa</div>
+          <div class="val" id="festa-val"></div>
+        </div>
+      </div>
+      <div class="pill dead">
+        <div class="ico">⏰</div>
+        <div>
+          <div class="lbl" data-i18n="deadlineLabel">Ordini entro</div>
+          <div class="val" id="dead-val"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MENU -->
+    <section class="card">
+      <h2><span class="badge-num">1</span> <span data-i18n="menuTitle">Scegli le pizze</span></h2>
+      <p class="hint" data-i18n="menuHint">Tocca una pizza per aggiungerla. Regoli mozzarella, impasto e quantità qui sotto.</p>
+      <div id="menu"></div>
+    </section>
+
+    <!-- CART -->
+    <section class="card">
+      <h2><span class="badge-num">2</span> <span data-i18n="cartTitle">Il tuo ordine</span></h2>
+      <div id="cart"></div>
+    </section>
+
+    <!-- DETAILS -->
+    <section class="card">
+      <h2><span class="badge-num">3</span> <span data-i18n="detailsTitle">I tuoi dati</span></h2>
+      <div class="field">
+        <label data-i18n="nameLabel">Nome <span class="req">*</span></label>
+        <input id="f-nome" type="text" data-i18n-ph="namePh" placeholder="Es. Mario Rossi" autocomplete="name" />
+      </div>
+      <div class="field">
+        <label data-i18n="phoneLabel">Telefono</label>
+        <input id="f-tel" type="tel" data-i18n-ph="phonePh" placeholder="Es. 333 1234567" autocomplete="tel" />
+      </div>
+      <div class="field">
+        <label data-i18n="drinkLabel">Bibite</label>
+        <p class="hint" style="margin:0 0 8px;" data-i18n="drinkHint">Imposta quante ne vuoi per ogni tipo.</p>
+        <div id="drinks-list"></div>
+        <input id="f-bibita-altro" type="text" style="margin-top:10px;" data-i18n-ph="drinkOtherPh" placeholder="Altra bibita (facoltativo)" />
+      </div>
+      <div class="field">
+        <label data-i18n="notesLabel">Note</label>
+        <textarea id="f-note" data-i18n-ph="notesPh" placeholder="Es. senza cipolla, allergie..."></textarea>
+      </div>
+    </section>
+
+    <!-- SEND -->
+    <section class="card" style="background:linear-gradient(180deg,#fff, #fffdf8);">
+      <div class="summary" id="summary"></div>
+      <button class="send" onclick="sendWhatsApp()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm0 18.15h-.01c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.36c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01s-.43.06-.66.31c-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg>
+        <span data-i18n="sendBtn">Invia su WhatsApp</span>
+      </button>
+      <p class="send-note" data-i18n="sendNote">Si aprirà WhatsApp: scegli il gruppo e invia.</p>
+    </section>
+
+    <!-- ORGANIZER -->
+    <details class="org card" style="padding:14px 18px;">
+      <summary><span class="chev">▸</span> <span data-i18n="orgTitle">Per chi organizza · dati & impostazioni</span></summary>
+      <div class="org-body">
+        <div class="settings">
+          <div class="two">
+            <div class="field">
+              <label data-i18n="setFesta">Data festa</label>
+              <input id="set-festa" type="text" />
+            </div>
+            <div class="field">
+              <label data-i18n="setDead">Scadenza ordini</label>
+              <input id="set-dead" type="text" />
+            </div>
+          </div>
+          <p class="hint" style="margin:-2px 0 14px;" data-i18n="setHint">Le date si salvano su questo dispositivo.</p>
+        </div>
+        <div class="gstat off" id="g-status"><span class="dot"></span></div>
+        <p class="hint" data-i18n="exportHint">Gli ordini compilati su questo dispositivo vengono registrati qui sotto.</p>
+        <div class="summary" style="margin-bottom:12px;">
+          <div class="line"><span data-i18n="ordersSaved">Ordini salvati</span><span class="count" id="orders-count">0</span></div>
+        </div>
+        <div class="org-actions">
+          <button class="btn primary" onclick="exportCSV()">⬇︎ <span data-i18n="exportBtn">Esporta CSV</span></button>
+          <button class="btn ghost" onclick="clearOrders()">🗑 <span data-i18n="clearBtn">Svuota</span></button>
+        </div>
+      </div>
+    </details>
+
+    <footer data-i18n="footer">Buona festa! 🎉</footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* =======================================================================
+   COLLEGAMENTO A GOOGLE DRIVE / FOGLIO GOOGLE
+   Incolla qui sotto, tra le virgolette, il link della tua Web App di
+   Google Apps Script (vedi istruzioni). Esempio:
+   const GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfy.../exec";
+   Se lo lasci vuoto, gli ordini NON vengono inviati al foglio (solo WhatsApp + CSV locale).
+   ======================================================================= */
+const GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx2P2PQoHo3MY5JrgGs3U_fnUI7aKETl5i_oYiyIpxwwkwNgdEph-pqFe2BSupzUXWiSA/exec";
+
+/* ---------- i18n ---------- */
+const I18N = {
+  it:{
+    kicker:"Festa di fine anno", title:"Ordine Pizze 🍕",
+    sub:"Scegli le tue pizze e invia l'ordine sul gruppo WhatsApp.",
+    festaLabel:"Festa", deadlineLabel:"Ordini entro",
+    menuTitle:"Scegli le pizze",
+    menuHint:"Tocca una pizza per aggiungerla. Regoli mozzarella, impasto e quantità qui sotto.",
+    cartTitle:"Il tuo ordine", detailsTitle:"I tuoi dati",
+    nameLabel:'Nome <span class="req">*</span>', namePh:"Es. Mario Rossi",
+    phoneLabel:"Telefono", phonePh:"Es. 333 1234567",
+    drinkLabel:"Bibite", drinkPh:"Es. Coca Cola", drinkHint:"Imposta quante ne vuoi per ogni tipo.", drinkOtherPh:"Altra bibita (facoltativo)",
+    notesLabel:"Note", notesPh:"Es. senza cipolla, allergie...",
+    sendBtn:"Invia su WhatsApp", sendNote:"Si aprirà WhatsApp: scegli il gruppo e invia.",
+    orgTitle:"Per chi organizza · dati & impostazioni",
+    setFesta:"Data festa", setDead:"Scadenza ordini",
+    setHint:"Le date si salvano su questo dispositivo.",
+    exportHint:"Gli ordini compilati su questo dispositivo vengono registrati qui sotto.",
+    ordersSaved:"Ordini salvati", exportBtn:"Esporta CSV", clearBtn:"Svuota",
+    footer:"Buona festa! 🎉",
+    normaleTitle:"Pizze normali", babyTitle:"Pizze baby", babyTag:"mini",
+    mozzWith:"Con mozzarella", mozzWithout:"Senza mozzarella",
+    doughNormal:"Normale", doughGF:"Senza glutine",
+    cartEmpty:"Nessuna pizza ancora. Scegline una dal menu! 👆",
+    each:"a scelta", pizzasWord:"pizze", pizzaWord:"pizza",
+    sumPizzas:"Pizze totali", sumName:"Ordine di",
+    errName:"Scrivi il tuo nome prima di inviare 🙂",
+    errEmpty:"Aggiungi almeno una pizza 🍕",
+    sentToast:"Apro WhatsApp e salvo l'ordine ✓",
+    clearedToast:"Lista svuotata", noOrders:"Nessun ordine da esportare",
+    csvHead:["Data e ora","Nome","Telefono","Pizze","Bibita","Note"],
+    waTitle:"Ordine Pizze – Festa di fine anno", waPizze:"Pizze", waBibita:"Bibita", waNote:"Note",
+    gSync:"Foglio Google", gOn:"Collegato ✓ — gli ordini arrivano sul tuo foglio", gOff:"Non collegato — solo WhatsApp + CSV su questo dispositivo",
+    gSent:"Ordine inviato al foglio Google ✓", gFail:"Ordine salvato qui. Invio al foglio non riuscito (riprova online).",
+    drinks:["Acqua","Coca Cola","Fanta","Aranciata","Birra","Niente"]
+  },
+  en:{
+    kicker:"End-of-year party", title:"Pizza Order 🍕",
+    sub:"Pick your pizzas and send your order to the WhatsApp group.",
+    festaLabel:"Party", deadlineLabel:"Order by",
+    menuTitle:"Choose your pizzas",
+    menuHint:"Tap a pizza to add it. Adjust mozzarella, dough and quantity below.",
+    cartTitle:"Your order", detailsTitle:"Your details",
+    nameLabel:'Name <span class="req">*</span>', namePh:"e.g. Mario Rossi",
+    phoneLabel:"Phone", phonePh:"e.g. 333 1234567",
+    drinkLabel:"Drinks", drinkPh:"e.g. Coca Cola", drinkHint:"Set how many you want of each.", drinkOtherPh:"Other drink (optional)",
+    notesLabel:"Notes", notesPh:"e.g. no onion, allergies...",
+    sendBtn:"Send on WhatsApp", sendNote:"WhatsApp will open: pick the group and send.",
+    orgTitle:"For the organizer · data & settings",
+    setFesta:"Party date", setDead:"Order deadline",
+    setHint:"Dates are saved on this device.",
+    exportHint:"Orders filled in on this device are logged below.",
+    ordersSaved:"Saved orders", exportBtn:"Export CSV", clearBtn:"Clear",
+    footer:"Have a great party! 🎉",
+    normaleTitle:"Regular pizzas", babyTitle:"Baby pizzas", babyTag:"mini",
+    mozzWith:"With mozzarella", mozzWithout:"No mozzarella",
+    doughNormal:"Regular", doughGF:"Gluten-free",
+    cartEmpty:"No pizzas yet. Pick one from the menu! 👆",
+    each:"choice", pizzasWord:"pizzas", pizzaWord:"pizza",
+    sumPizzas:"Total pizzas", sumName:"Order by",
+    errName:"Please enter your name before sending 🙂",
+    errEmpty:"Add at least one pizza 🍕",
+    sentToast:"Opening WhatsApp and saving order ✓",
+    clearedToast:"List cleared", noOrders:"No orders to export",
+    csvHead:["Date & time","Name","Phone","Pizzas","Drink","Notes"],
+    waTitle:"Pizza Order – End-of-year party", waPizze:"Pizzas", waBibita:"Drink", waNote:"Notes",
+    gSync:"Google Sheet", gOn:"Connected ✓ — orders land in your sheet", gOff:"Not connected — WhatsApp + CSV on this device only",
+    gSent:"Order sent to Google Sheet ✓", gFail:"Saved here. Sending to the sheet failed (retry online).",
+    drinks:["Water","Coca Cola","Fanta","Orangeade","Beer","None"]
+  }
+};
+
+/* gusto translations */
+const GUSTO_I18N = {
+  "Margherita":{it:"Margherita",en:"Margherita"},
+  "Prosciutto cotto":{it:"Prosciutto cotto",en:"Cooked ham"},
+  "Salame piccante":{it:"Salame piccante",en:"Spicy salami"},
+  "Verdure":{it:"Verdure",en:"Vegetables"},
+  "Prosciutto":{it:"Prosciutto",en:"Ham"},
+  "Würstel":{it:"Würstel",en:"Hot dog"}
+};
+
+/* drink translations */
+const DRINK_I18N = {
+  "Acqua":{it:"Acqua",en:"Water"},
+  "Coca Cola":{it:"Coca Cola",en:"Coca Cola"},
+  "Fanta":{it:"Fanta",en:"Fanta"},
+  "Aranciata":{it:"Aranciata",en:"Orangeade"},
+  "Birra":{it:"Birra",en:"Beer"}
+};
+const DRINKS = Object.keys(DRINK_I18N);
+let drinkQty = {};   // canonical name -> qty
+function dtxt(d){ return (DRINK_I18N[d] && DRINK_I18N[d][lang]) || d; }
+
+const MENU = {
+  normale:{ gusti:["Margherita","Prosciutto cotto","Salame piccante","Verdure"] },
+  baby:{ gusti:["Prosciutto","Würstel","Margherita"] }
+};
+
+/* ---------- state ---------- */
+let lang = localStorage.getItem("pizza_lang") || "it";
+let cart = [];           // {id, cat, gusto, mozz:true, dough:'normale'|'gf', qty}
+let nextId = 1;
+const LS_ORDERS = "pizza_orders_v1";
+const LS_FESTA = "pizza_festa";
+const LS_DEAD = "pizza_dead";
+
+function t(k){ return I18N[lang][k]; }
+function gtxt(g){ return (GUSTO_I18N[g] && GUSTO_I18N[g][lang]) || g; }
+
+/* ---------- render menu ---------- */
+function renderMenu(){
+  const el = document.getElementById("menu");
+  el.innerHTML = "";
+  ["normale","baby"].forEach(cat=>{
+    const group = document.createElement("div");
+    group.className = "menu-group";
+    const title = cat==="normale" ? t("normaleTitle") : t("babyTitle");
+    const tag = cat==="baby" ? `<span class="tag">${t("babyTag")}</span>` : "";
+    group.innerHTML = `<h3>${title} ${tag}</h3>`;
+    const grid = document.createElement("div");
+    grid.className = "gusti";
+    MENU[cat].gusti.forEach(g=>{
+      const b = document.createElement("button");
+      b.className = "gusto";
+      b.innerHTML = `<span>${gtxt(g)}</span><span class="plus">+</span>`;
+      b.onclick = ()=>addToCart(cat,g);
+      grid.appendChild(b);
+    });
+    group.appendChild(grid);
+    el.appendChild(group);
+  });
+}
+
+/* ---------- cart ---------- */
+function addToCart(cat,gusto){
+  // merge if identical default already exists
+  cart.push({id:nextId++, cat, gusto, mozz:true, dough:"normale", qty:1});
+  renderCart(); renderSummary();
+  flashToast("➕ " + gtxt(gusto));
+}
+function removeItem(id){ cart = cart.filter(c=>c.id!==id); renderCart(); renderSummary(); }
+function setMozz(id,v){ const c=cart.find(x=>x.id===id); if(c){c.mozz=v; renderCart(); }}
+function setDough(id,v){ const c=cart.find(x=>x.id===id); if(c){c.dough=v; renderCart(); }}
+function setQty(id,d){ const c=cart.find(x=>x.id===id); if(c){ c.qty=Math.max(1,c.qty+d); renderCart(); renderSummary(); }}
+
+function renderCart(){
+  const el = document.getElementById("cart");
+  if(cart.length===0){
+    el.innerHTML = `<div class="cart-empty"><span class="em">🍕</span>${t("cartEmpty")}</div>`;
+    return;
+  }
+  el.innerHTML = "";
+  cart.forEach(c=>{
+    const catLbl = c.cat==="baby" ? t("babyTitle") : t("normaleTitle");
+    const div = document.createElement("div");
+    div.className = "citem";
+    div.innerHTML = `
+      <div class="top">
+        <div class="name">${gtxt(c.gusto)}<small>${catLbl}</small></div>
+        <button class="rm" title="rimuovi" onclick="removeItem(${c.id})">✕</button>
+      </div>
+      <div class="opt-row">
+        <div class="seg">
+          <button class="${c.mozz?'on':''}" onclick="setMozz(${c.id},true)">${t("mozzWith")}</button>
+          <button class="${!c.mozz?'on':''}" onclick="setMozz(${c.id},false)">${t("mozzWithout")}</button>
+        </div>
+      </div>
+      <div class="opt-row" style="margin-top:8px;">
+        <div class="seg gf">
+          <button class="${c.dough==='normale'?'on':''}" onclick="setDough(${c.id},'normale')">${t("doughNormal")}</button>
+          <button class="${c.dough==='gf'?'on':''}" onclick="setDough(${c.id},'gf')">${t("doughGF")}</button>
+        </div>
+        <div class="qty">
+          <button onclick="setQty(${c.id},-1)">−</button>
+          <span>${c.qty}</span>
+          <button onclick="setQty(${c.id},1)">+</button>
+        </div>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+function totalPizzas(){ return cart.reduce((s,c)=>s+c.qty,0); }
+
+function renderSummary(){
+  const el = document.getElementById("summary");
+  const n = totalPizzas();
+  const word = n===1 ? t("pizzaWord") : t("pizzasWord");
+  el.innerHTML = `
+    <div class="line tot"><span>${t("sumPizzas")}</span><span>${n} ${word}</span></div>`;
+}
+
+/* ---------- drinks with quantities ---------- */
+function setDrinkQty(d,delta){
+  drinkQty[d] = Math.max(0,(drinkQty[d]||0)+delta);
+  renderDrinks();
+}
+function renderDrinks(){
+  const wrap = document.getElementById("drinks-list");
+  if(!wrap) return;
+  wrap.innerHTML = "";
+  DRINKS.forEach(d=>{
+    const n = drinkQty[d]||0;
+    const row = document.createElement("div");
+    row.className = "drow" + (n>0?" active":"");
+    row.innerHTML = `
+      <span class="dname">${dtxt(d)}</span>
+      <div class="qty">
+        <button onclick="setDrinkQty('${d}',-1)">−</button>
+        <span>${n}</span>
+        <button onclick="setDrinkQty('${d}',1)">+</button>
+      </div>`;
+    wrap.appendChild(row);
+  });
+}
+function drinkLines(){
+  const lines = DRINKS.filter(d=>(drinkQty[d]||0)>0).map(d=>`${drinkQty[d]}× ${dtxt(d)}`);
+  const altro = (document.getElementById("f-bibita-altro")||{}).value;
+  if(altro && altro.trim()) lines.push(altro.trim());
+  return lines;
+}
+
+/* ---------- i18n apply ---------- */
+function applyI18n(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(e=>{
+    const k = e.getAttribute("data-i18n");
+    if(I18N[lang][k]!==undefined) e.innerHTML = I18N[lang][k];
+  });
+  document.querySelectorAll("[data-i18n-ph]").forEach(e=>{
+    const k = e.getAttribute("data-i18n-ph");
+    if(I18N[lang][k]!==undefined) e.placeholder = I18N[lang][k];
+  });
+  document.getElementById("lang-it").classList.toggle("on", lang==="it");
+  document.getElementById("lang-en").classList.toggle("on", lang==="en");
+}
+function setLang(l){
+  lang = l; localStorage.setItem("pizza_lang", l);
+  applyI18n(); renderMenu(); renderCart(); renderSummary(); renderDrinks();
+  refreshGoogleStatus();
+}
+
+/* ---------- settings / dates ---------- */
+function loadSettings(){
+  const festa = localStorage.getItem(LS_FESTA) || "";
+  const dead = localStorage.getItem(LS_DEAD) || "";
+  document.getElementById("festa-val").textContent = festa;
+  document.getElementById("dead-val").textContent = dead;
+  document.getElementById("set-festa").value = festa;
+  document.getElementById("set-dead").value = dead;
+}
+function bindSettings(){
+  document.getElementById("set-festa").addEventListener("input", e=>{
+    localStorage.setItem(LS_FESTA, e.target.value);
+    document.getElementById("festa-val").textContent = e.target.value;
+  });
+  document.getElementById("set-dead").addEventListener("input", e=>{
+    localStorage.setItem(LS_DEAD, e.target.value);
+    document.getElementById("dead-val").textContent = e.target.value;
+  });
+}
+
+/* ---------- order log + CSV ---------- */
+function getOrders(){ try{ return JSON.parse(localStorage.getItem(LS_ORDERS)||"[]"); }catch(e){ return []; } }
+function saveOrders(o){ localStorage.setItem(LS_ORDERS, JSON.stringify(o)); refreshCount(); }
+function refreshCount(){ document.getElementById("orders-count").textContent = getOrders().length; }
+
+function itemLine(c){
+  const mozz = c.mozz ? t("mozzWith") : t("mozzWithout");
+  const dough = c.dough==="gf" ? t("doughGF") : t("doughNormal");
+  const cat = c.cat==="baby" ? (lang==="it"?"baby ":"baby ") : "";
+  return `${c.qty}× ${cat}${gtxt(c.gusto)} — ${mozz.toLowerCase()}, ${dough.toLowerCase()}`;
+}
+
+function buildOrderObject(){
+  return {
+    ts: new Date().toLocaleString(lang==="it"?"it-IT":"en-GB"),
+    nome: document.getElementById("f-nome").value.trim(),
+    tel: document.getElementById("f-tel").value.trim(),
+    bibita: drinkLines().join(" | "),
+    note: document.getElementById("f-note").value.trim(),
+    pizze: cart.map(itemLine).join(" | ")
+  };
+}
+
+/* ---------- send ---------- */
+function sendWhatsApp(){
+  const nomeEl = document.getElementById("f-nome");
+  const nome = nomeEl.value.trim();
+  if(cart.length===0){ flashToast(t("errEmpty")); return; }
+  if(!nome){ nomeEl.classList.add("err"); nomeEl.focus(); flashToast(t("errName")); return; }
+  nomeEl.classList.remove("err");
+
+  const o = buildOrderObject();
+  // save log
+  const orders = getOrders(); orders.push(o); saveOrders(orders);
+
+  // send to Google Sheet (fire-and-forget)
+  sendToGoogle(o);
+
+  // build message
+  const lines = [];
+  lines.push(`🍕 *${t("waTitle")}*`);
+  lines.push("");
+  lines.push(`👤 *${o.nome}*`);
+  if(o.tel) lines.push(`📞 ${o.tel}`);
+  lines.push("");
+  lines.push(`*${t("waPizze")}:*`);
+  cart.forEach(c=> lines.push(`• ${itemLine(c)}`));
+  if(o.bibita) lines.push(`\n🥤 ${t("waBibita")}:`);
+  drinkLines().forEach(d=> lines.push(`• ${d}`));
+  if(o.note) lines.push(`📝 ${t("waNote")}: ${o.note}`);
+
+  const text = encodeURIComponent(lines.join("\n"));
+  flashToast(t("sentToast"));
+  window.open(`https://wa.me/?text=${text}`, "_blank");
+}
+
+/* ---------- Google Sheet sync ---------- */
+function googleConfigured(){ return typeof GOOGLE_WEBAPP_URL === "string" && /^https:\/\/script\.google\.com\//.test(GOOGLE_WEBAPP_URL); }
+function sendToGoogle(o){
+  if(!googleConfigured()) return;
+  try{
+    fetch(GOOGLE_WEBAPP_URL, {
+      method:"POST",
+      mode:"no-cors",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify(o)
+    }).then(()=>{ /* no-cors: response opaque, assume ok */ })
+      .catch(()=>{ flashToast(t("gFail")); });
+  }catch(e){ flashToast(t("gFail")); }
+}
+function refreshGoogleStatus(){
+  const el = document.getElementById("g-status");
+  if(!el) return;
+  const on = googleConfigured();
+  el.className = "gstat " + (on?"on":"off");
+  el.innerHTML = `<span class="dot"></span>${on ? t("gOn") : t("gOff")}`;
+}
+
+/* ---------- CSV ---------- */
+function csvCell(v){
+  v = (v==null?"":String(v));
+  if(/[",\n;]/.test(v)) return '"' + v.replace(/"/g,'""') + '"';
+  return v;
+}
+function exportCSV(){
+  const orders = getOrders();
+  if(orders.length===0){ flashToast(t("noOrders")); return; }
+  const head = t("csvHead");
+  const rows = [head.map(csvCell).join(",")];
+  orders.forEach(o=>{
+    rows.push([o.ts,o.nome,o.tel,o.pizze,o.bibita,o.note].map(csvCell).join(","));
+  });
+  const csv = "\uFEFF" + rows.join("\r\n");  // BOM for Excel
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "ordini_pizze_festa.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+function clearOrders(){
+  if(getOrders().length===0){ flashToast(t("noOrders")); return; }
+  if(confirm(lang==="it"?"Svuotare la lista degli ordini salvati su questo dispositivo?":"Clear the list of orders saved on this device?")){
+    localStorage.removeItem(LS_ORDERS); refreshCount(); flashToast(t("clearedToast"));
+  }
+}
+
+/* ---------- toast ---------- */
+let toastTimer;
+function flashToast(msg){
+  const tEl = document.getElementById("toast");
+  tEl.textContent = msg; tEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>tEl.classList.remove("show"), 2200);
+}
+
+/* ---------- init ---------- */
+applyI18n();
+renderMenu();
+renderCart();
+renderSummary();
+renderDrinks();
+loadSettings();
+bindSettings();
+refreshCount();
+refreshGoogleStatus();
+</script>
+</body>
+</html>
