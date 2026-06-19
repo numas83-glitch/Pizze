@@ -82,6 +82,9 @@
   .gusto:active{transform:scale(.97);}
   .gusto:hover{border-color:var(--tomato);background:#fff;}
   .gusto .plus{width:22px;height:22px;border-radius:50%;background:var(--tomato);color:#fff;display:grid;place-items:center;font-size:16px;font-weight:700;flex-shrink:0;line-height:1;}
+  .gusto .gname{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1;text-align:left;}
+  .gprice{font-family:'Nunito';font-weight:800;font-size:12px;color:var(--basil-dark);margin-top:2px;}
+  .drow .dname{display:flex;flex-direction:column;}
 
   /* Cart */
   .cart-empty{text-align:center;padding:22px 10px;color:var(--ink-soft);font-weight:600;}
@@ -91,6 +94,8 @@
   .citem .top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;}
   .citem .name{font-family:'Fredoka',sans-serif;font-weight:600;font-size:16px;line-height:1.15;}
   .citem .name small{display:block;font-family:'Nunito';font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--basil-dark);margin-top:1px;}
+  .citem-sub{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-family:'Nunito';font-size:13px;font-weight:700;color:var(--ink-soft);}
+  .citem-sub strong{font-family:'Fredoka',sans-serif;font-size:15px;color:var(--ink);}
   .citem .rm{border:none;background:rgba(225,68,48,.10);color:var(--tomato);width:28px;height:28px;border-radius:9px;cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;display:grid;place-items:center;}
   .citem .rm:hover{background:var(--tomato);color:#fff;}
   .opt-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
@@ -289,8 +294,24 @@
 const FESTA = {
   nome:      "Festa di fine anno",   // titolino in alto (italiano)
   nomeEn:    "End-of-year party",    // stesso titolo in inglese
-  dataFesta: "Venerdì 03/06/2026",                     // es. "Venerdì 20 dicembre" — quando è la festa
-  scadenza:  "01/06/2026"                      // es. "Entro il 15 dicembre" — ordini entro
+  dataFesta: "",                     // es. "Venerdì 20 dicembre" — quando è la festa
+  scadenza:  ""                      // es. "Entro il 15 dicembre" — ordini entro
+};
+
+/* =======================================================================
+   💶  PREZZI  —  MODIFICA QUI (in euro). Vale per tutti dopo l'upload.
+   Scrivi i numeri tra : e , (usa il punto per i decimali, es. 7.50)
+   ======================================================================= */
+const PREZZI = {
+  valuta: "€",
+  // Pizze normali — prezzo per gusto
+  normale: { "Margherita": 6, "Prosciutto cotto": 7, "Salame piccante": 7, "Verdure": 7 },
+  // Pizze baby — prezzo per gusto
+  baby: { "Prosciutto": 4, "Würstel": 4, "Margherita": 3.5 },
+  // Supplemento per impasto SENZA GLUTINE (aggiunto al prezzo della pizza). 0 = nessun supplemento
+  supplementoSenzaGlutine: 2,
+  // Bibite — prezzo per tipo
+  bibite: { "Acqua": 1, "Coca Cola": 2.5, "Fanta": 2.5, "Aranciata": 2.5, "Birra": 3 }
 };
 
 /* =======================================================================
@@ -328,7 +349,7 @@ const I18N = {
     doughNormal:"Normale", doughGF:"Senza glutine",
     cartEmpty:"Nessuna pizza ancora. Scegline una dal menu! 👆",
     each:"a scelta", pizzasWord:"pizze", pizzaWord:"pizza",
-    sumPizzas:"Pizze totali", sumName:"Ordine di",
+    sumPizzas:"Pizze totali", sumName:"Ordine di", sumTotal:"Totale da pagare",
     errName:"Scrivi il tuo nome prima di inviare 🙂",
     errEmpty:"Aggiungi almeno una pizza 🍕",
     sentToast:"Ordine inviato ✓",
@@ -363,7 +384,7 @@ const I18N = {
     doughNormal:"Regular", doughGF:"Gluten-free",
     cartEmpty:"No pizzas yet. Pick one from the menu! 👆",
     each:"choice", pizzasWord:"pizzas", pizzaWord:"pizza",
-    sumPizzas:"Total pizzas", sumName:"Order by",
+    sumPizzas:"Total pizzas", sumName:"Order by", sumTotal:"Total to pay",
     errName:"Please enter your name before sending 🙂",
     errEmpty:"Add at least one pizza 🍕",
     sentToast:"Order sent ✓",
@@ -414,6 +435,21 @@ const LS_DEAD = "pizza_dead";
 function t(k){ return I18N[lang][k]; }
 function gtxt(g){ return (GUSTO_I18N[g] && GUSTO_I18N[g][lang]) || g; }
 
+/* ---------- prezzi ---------- */
+function fmtPrice(n){ return PREZZI.valuta + " " + (Number(n)||0).toFixed(2).replace(".", ","); }
+function pizzaPrice(cat, gusto, dough){
+  var base = (PREZZI[cat] && PREZZI[cat][gusto]) || 0;
+  if(dough === "gf") base += (PREZZI.supplementoSenzaGlutine || 0);
+  return base;
+}
+function drinkPrice(d){ return (PREZZI.bibite && PREZZI.bibite[d]) || 0; }
+function orderTotal(){
+  var tot = 0;
+  cart.forEach(c=> tot += pizzaPrice(c.cat, c.gusto, c.dough) * c.qty);
+  DRINKS.forEach(d=>{ if((drinkQty[d]||0)>0) tot += drinkPrice(d) * drinkQty[d]; });
+  return tot;
+}
+
 /* ---------- render menu ---------- */
 function renderMenu(){
   const el = document.getElementById("menu");
@@ -429,7 +465,7 @@ function renderMenu(){
     MENU[cat].gusti.forEach(g=>{
       const b = document.createElement("button");
       b.className = "gusto";
-      b.innerHTML = `<span>${gtxt(g)}</span><span class="plus">+</span>`;
+      b.innerHTML = `<span class="gname">${gtxt(g)}<small class="gprice">${fmtPrice(pizzaPrice(cat,g,'normale'))}</small></span><span class="plus">+</span>`;
       b.onclick = ()=>addToCart(cat,g);
       grid.appendChild(b);
     });
@@ -482,7 +518,8 @@ function renderCart(){
           <span>${c.qty}</span>
           <button onclick="setQty(${c.id},1)">+</button>
         </div>
-      </div>`;
+      </div>
+      <div class="citem-sub"><span>${c.qty} × ${fmtPrice(pizzaPrice(c.cat,c.gusto,c.dough))}</span><strong>${fmtPrice(pizzaPrice(c.cat,c.gusto,c.dough)*c.qty)}</strong></div>`;
     el.appendChild(div);
   });
 }
@@ -494,13 +531,15 @@ function renderSummary(){
   const n = totalPizzas();
   const word = n===1 ? t("pizzaWord") : t("pizzasWord");
   el.innerHTML = `
-    <div class="line tot"><span>${t("sumPizzas")}</span><span>${n} ${word}</span></div>`;
+    <div class="line"><span>${t("sumPizzas")}</span><span>${n} ${word}</span></div>
+    <div class="line tot"><span>${t("sumTotal")}</span><span>${fmtPrice(orderTotal())}</span></div>`;
 }
 
 /* ---------- drinks with quantities ---------- */
 function setDrinkQty(d,delta){
   drinkQty[d] = Math.max(0,(drinkQty[d]||0)+delta);
   renderDrinks();
+  renderSummary();
 }
 function renderDrinks(){
   const wrap = document.getElementById("drinks-list");
@@ -511,7 +550,7 @@ function renderDrinks(){
     const row = document.createElement("div");
     row.className = "drow" + (n>0?" active":"");
     row.innerHTML = `
-      <span class="dname">${dtxt(d)}</span>
+      <span class="dname">${dtxt(d)}<small class="gprice">${fmtPrice(drinkPrice(d))}</small></span>
       <div class="qty">
         <button onclick="setDrinkQty('${d}',-1)">−</button>
         <span>${n}</span>
@@ -587,7 +626,8 @@ function buildOrderObject(){
     tel: document.getElementById("f-tel").value.trim(),
     bibita: drinkLines().join(" | "),
     note: document.getElementById("f-note").value.trim(),
-    pizze: cart.map(itemLine).join(" | ")
+    pizze: cart.map(itemLine).join(" | "),
+    totale: orderTotal()
   };
 }
 
@@ -711,3 +751,4 @@ window.addEventListener("hashchange", checkAdmin);
 </script>
 </body>
 </html>
+
