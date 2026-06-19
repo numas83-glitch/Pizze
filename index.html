@@ -103,6 +103,8 @@
   .seg button{border:none;background:none;font-family:'Nunito';font-weight:700;font-size:12.5px;color:var(--ink-soft);padding:5px 9px;border-radius:8px;cursor:pointer;line-height:1;white-space:nowrap;}
   .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm);}
   .seg.gf button.on{color:var(--basil-dark);}
+  .seg.mozz{display:flex;flex-wrap:wrap;width:100%;}
+  .seg.mozz button{flex:1 1 28%;}
   .qty{display:inline-flex;align-items:center;gap:0;margin-left:auto;background:var(--cream);border:1px solid var(--line);border-radius:10px;}
   .qty button{border:none;background:none;width:30px;height:30px;font-size:18px;font-weight:700;color:var(--tomato);cursor:pointer;line-height:1;display:grid;place-items:center;}
   .qty span{min-width:24px;text-align:center;font-family:'Fredoka',sans-serif;font-weight:600;font-size:15px;}
@@ -299,19 +301,49 @@ const FESTA = {
 };
 
 /* =======================================================================
-   💶  PREZZI  —  MODIFICA QUI (in euro). Vale per tutti dopo l'upload.
-   Scrivi i numeri tra : e , (usa il punto per i decimali, es. 7.50)
+   🍕  MENU & PREZZI  —  MODIFICA QUI (prezzi in €, usa il punto: 7.50)
+   • AGGIUNGERE una pizza/bibita: aggiungi una riga  "Nome": prezzo,
+   • TOGLIERE: cancella la riga
    ======================================================================= */
-const PREZZI = {
+const MENU = {
   valuta: "€",
-  // Pizze normali — prezzo per gusto
-  normale: { "Margherita": 6, "Prosciutto cotto": 7, "Salame piccante": 7, "Verdure": 7 },
-  // Pizze baby — prezzo per gusto
-  baby: { "Prosciutto": 4, "Würstel": 4, "Margherita": 3.5 },
-  // Supplemento per impasto SENZA GLUTINE (aggiunto al prezzo della pizza). 0 = nessun supplemento
-  supplementoSenzaGlutine: 2,
-  // Bibite — prezzo per tipo
-  bibite: { "Acqua": 1, "Coca Cola": 2.5, "Fanta": 2.5, "Aranciata": 2.5, "Birra": 3 }
+
+  // --- PIZZE NORMALI ---  "Nome": prezzo
+  normali: {
+    "Margherita": 6,
+    "Prosciutto cotto": 7,
+    "Salame piccante": 7,
+    "Verdure": 7
+  },
+
+  // --- PIZZE BABY ---
+  baby: {
+    "Prosciutto": 4,
+    "Würstel": 4,
+    "Margherita": 3.5
+  },
+
+  // --- BIBITE ---
+  bibite: {
+    "Acqua": 1,
+    "Coca Cola": 2.5,
+    "Fanta": 2.5,
+    "Aranciata": 2.5,
+    "Birra": 3
+  },
+
+  // --- OPZIONE MOZZARELLA --- (true = mostrata, false = nascosta)
+  mozzarella: {
+    "Normale": true,
+    "Senza lattosio": true,
+    "Senza mozzarella": true
+  },
+
+  // --- SENZA GLUTINE ---  (per ora spento)
+  senzaGlutine: {
+    attivo: false,   // metti  true  per riattivare la scelta dell'impasto
+    supplemento: 2   // € in più per impasto senza glutine
+  }
 };
 
 /* =======================================================================
@@ -330,7 +362,7 @@ const I18N = {
     sub:"Scegli le tue pizze e invia l'ordine all'organizzatore.",
     festaLabel:"Festa", deadlineLabel:"Ordini entro",
     menuTitle:"Scegli le pizze",
-    menuHint:"Tocca una pizza per aggiungerla. Regoli mozzarella, impasto e quantità qui sotto.",
+    menuHint:"Tocca una pizza per aggiungerla. Regoli mozzarella e quantità qui sotto.",
     cartTitle:"Il tuo ordine", detailsTitle:"I tuoi dati",
     nameLabel:'Nome <span class="req">*</span>', namePh:"Es. Mario Rossi",
     phoneLabel:"Telefono", phonePh:"Es. 333 1234567",
@@ -365,7 +397,7 @@ const I18N = {
     sub:"Pick your pizzas and send your order to the organizer.",
     festaLabel:"Party", deadlineLabel:"Order by",
     menuTitle:"Choose your pizzas",
-    menuHint:"Tap a pizza to add it. Adjust mozzarella, dough and quantity below.",
+    menuHint:"Tap a pizza to add it. Adjust mozzarella and quantity below.",
     cartTitle:"Your order", detailsTitle:"Your details",
     nameLabel:'Name <span class="req">*</span>', namePh:"e.g. Mario Rossi",
     phoneLabel:"Phone", phonePh:"e.g. 333 1234567",
@@ -397,32 +429,7 @@ const I18N = {
   }
 };
 
-/* gusto translations */
-const GUSTO_I18N = {
-  "Margherita":{it:"Margherita",en:"Margherita"},
-  "Prosciutto cotto":{it:"Prosciutto cotto",en:"Cooked ham"},
-  "Salame piccante":{it:"Salame piccante",en:"Spicy salami"},
-  "Verdure":{it:"Verdure",en:"Vegetables"},
-  "Prosciutto":{it:"Prosciutto",en:"Ham"},
-  "Würstel":{it:"Würstel",en:"Hot dog"}
-};
-
-/* drink translations */
-const DRINK_I18N = {
-  "Acqua":{it:"Acqua",en:"Water"},
-  "Coca Cola":{it:"Coca Cola",en:"Coca Cola"},
-  "Fanta":{it:"Fanta",en:"Fanta"},
-  "Aranciata":{it:"Aranciata",en:"Orangeade"},
-  "Birra":{it:"Birra",en:"Beer"}
-};
-const DRINKS = Object.keys(DRINK_I18N);
-let drinkQty = {};   // canonical name -> qty
-function dtxt(d){ return (DRINK_I18N[d] && DRINK_I18N[d][lang]) || d; }
-
-const MENU = {
-  normale:{ gusti:["Margherita","Prosciutto cotto","Salame piccante","Verdure"] },
-  baby:{ gusti:["Prosciutto","Würstel","Margherita"] }
-};
+let drinkQty = {};   // bibita -> quantità
 
 /* ---------- state ---------- */
 let lang = localStorage.getItem("pizza_lang") || "it";
@@ -433,20 +440,25 @@ const LS_FESTA = "pizza_festa";
 const LS_DEAD = "pizza_dead";
 
 function t(k){ return I18N[lang][k]; }
-function gtxt(g){ return (GUSTO_I18N[g] && GUSTO_I18N[g][lang]) || g; }
+function gtxt(g){ return g; }           // nome gusto (come scritto nel MENU)
+function dtxt(d){ return d; }           // nome bibita (come scritto nel MENU)
+const DRINKS = Object.keys(MENU.bibite);
+function catPrices(cat){ return cat==="baby" ? MENU.baby : MENU.normali; }
+function mozzOptions(){ return Object.keys(MENU.mozzarella || {}).filter(function(k){ return MENU.mozzarella[k]; }); }
+function gfAttivo(){ return !!(MENU.senzaGlutine && MENU.senzaGlutine.attivo); }
 
 /* ---------- prezzi ---------- */
-function fmtPrice(n){ return PREZZI.valuta + " " + (Number(n)||0).toFixed(2).replace(".", ","); }
+function fmtPrice(n){ return MENU.valuta + " " + (Number(n)||0).toFixed(2).replace(".", ","); }
 function pizzaPrice(cat, gusto, dough){
-  var base = (PREZZI[cat] && PREZZI[cat][gusto]) || 0;
-  if(dough === "gf") base += (PREZZI.supplementoSenzaGlutine || 0);
+  var base = catPrices(cat)[gusto] || 0;
+  if(gfAttivo() && dough === "gf") base += (MENU.senzaGlutine.supplemento || 0);
   return base;
 }
-function drinkPrice(d){ return (PREZZI.bibite && PREZZI.bibite[d]) || 0; }
+function drinkPrice(d){ return (MENU.bibite && MENU.bibite[d]) || 0; }
 function orderTotal(){
   var tot = 0;
-  cart.forEach(c=> tot += pizzaPrice(c.cat, c.gusto, c.dough) * c.qty);
-  DRINKS.forEach(d=>{ if((drinkQty[d]||0)>0) tot += drinkPrice(d) * drinkQty[d]; });
+  cart.forEach(function(c){ tot += pizzaPrice(c.cat, c.gusto, c.dough) * c.qty; });
+  DRINKS.forEach(function(d){ if((drinkQty[d]||0)>0) tot += drinkPrice(d) * drinkQty[d]; });
   return tot;
 }
 
@@ -454,7 +466,8 @@ function orderTotal(){
 function renderMenu(){
   const el = document.getElementById("menu");
   el.innerHTML = "";
-  ["normale","baby"].forEach(cat=>{
+  [["normale", MENU.normali],["baby", MENU.baby]].forEach(function(pair){
+    var cat = pair[0], pizze = pair[1] || {};
     const group = document.createElement("div");
     group.className = "menu-group";
     const title = cat==="normale" ? t("normaleTitle") : t("babyTitle");
@@ -462,7 +475,7 @@ function renderMenu(){
     group.innerHTML = `<h3>${title} ${tag}</h3>`;
     const grid = document.createElement("div");
     grid.className = "gusti";
-    MENU[cat].gusti.forEach(g=>{
+    Object.keys(pizze).forEach(function(g){
       const b = document.createElement("button");
       b.className = "gusto";
       b.innerHTML = `<span class="gname">${gtxt(g)}<small class="gprice">${fmtPrice(pizzaPrice(cat,g,'normale'))}</small></span><span class="plus">+</span>`;
@@ -476,14 +489,13 @@ function renderMenu(){
 
 /* ---------- cart ---------- */
 function addToCart(cat,gusto){
-  // merge if identical default already exists
-  cart.push({id:nextId++, cat, gusto, mozz:true, dough:"normale", qty:1});
+  cart.push({id:nextId++, cat, gusto, mozz:(mozzOptions()[0]||"Normale"), dough:"normale", qty:1});
   renderCart(); renderSummary();
   flashToast("➕ " + gtxt(gusto));
 }
 function removeItem(id){ cart = cart.filter(c=>c.id!==id); renderCart(); renderSummary(); }
 function setMozz(id,v){ const c=cart.find(x=>x.id===id); if(c){c.mozz=v; renderCart(); }}
-function setDough(id,v){ const c=cart.find(x=>x.id===id); if(c){c.dough=v; renderCart(); }}
+function setDough(id,v){ const c=cart.find(x=>x.id===id); if(c){c.dough=v; renderCart(); renderSummary(); }}
 function setQty(id,d){ const c=cart.find(x=>x.id===id); if(c){ c.qty=Math.max(1,c.qty+d); renderCart(); renderSummary(); }}
 
 function renderCart(){
@@ -497,22 +509,26 @@ function renderCart(){
     const catLbl = c.cat==="baby" ? t("babyTitle") : t("normaleTitle");
     const div = document.createElement("div");
     div.className = "citem";
+    const mozzBtns = mozzOptions().map(function(opt){
+      return `<button class="${c.mozz===opt?'on':''}" onclick="setMozz(${c.id},'${opt.replace(/'/g,"\\'")}')">${opt}</button>`;
+    }).join("");
+    const doughRow = gfAttivo() ? `
+      <div class="opt-row" style="margin-top:8px;">
+        <div class="seg gf">
+          <button class="${c.dough==='normale'?'on':''}" onclick="setDough(${c.id},'normale')">${t("doughNormal")}</button>
+          <button class="${c.dough==='gf'?'on':''}" onclick="setDough(${c.id},'gf')">${t("doughGF")}</button>
+        </div>
+      </div>` : "";
     div.innerHTML = `
       <div class="top">
         <div class="name">${gtxt(c.gusto)}<small>${catLbl}</small></div>
         <button class="rm" title="rimuovi" onclick="removeItem(${c.id})">✕</button>
       </div>
       <div class="opt-row">
-        <div class="seg">
-          <button class="${c.mozz?'on':''}" onclick="setMozz(${c.id},true)">${t("mozzWith")}</button>
-          <button class="${!c.mozz?'on':''}" onclick="setMozz(${c.id},false)">${t("mozzWithout")}</button>
-        </div>
+        <div class="seg mozz">${mozzBtns}</div>
       </div>
+      ${doughRow}
       <div class="opt-row" style="margin-top:8px;">
-        <div class="seg gf">
-          <button class="${c.dough==='normale'?'on':''}" onclick="setDough(${c.id},'normale')">${t("doughNormal")}</button>
-          <button class="${c.dough==='gf'?'on':''}" onclick="setDough(${c.id},'gf')">${t("doughGF")}</button>
-        </div>
         <div class="qty">
           <button onclick="setQty(${c.id},-1)">−</button>
           <span>${c.qty}</span>
@@ -613,10 +629,10 @@ function saveOrders(o){ localStorage.setItem(LS_ORDERS, JSON.stringify(o)); refr
 function refreshCount(){ document.getElementById("orders-count").textContent = getOrders().length; }
 
 function itemLine(c){
-  const mozz = c.mozz ? t("mozzWith") : t("mozzWithout");
-  const dough = c.dough==="gf" ? t("doughGF") : t("doughNormal");
-  const cat = c.cat==="baby" ? (lang==="it"?"baby ":"baby ") : "";
-  return `${c.qty}× ${cat}${gtxt(c.gusto)} — ${mozz.toLowerCase()}, ${dough.toLowerCase()}`;
+  var opts = String(c.mozz || "").toLowerCase();
+  if(gfAttivo() && c.dough === "gf") opts += ", senza glutine";
+  const cat = c.cat==="baby" ? "baby " : "";
+  return `${c.qty}× ${cat}${gtxt(c.gusto)} — ${opts}`;
 }
 
 function buildOrderObject(){
